@@ -33,8 +33,8 @@ def calculate_summary(df):
     win_games = df[df["result"] == "W"]
     loss_games = df[df["result"] == "L"]
 
-    avg_win_margin = (win_games["team_score"] - win_games["opponent_score"]).mean() if not win_games.empty else None
-    avg_loss_margin = (loss_games["opponent_score"] - loss_games["team_score"]).mean() if not loss_games.empty else None
+    avg_win_margin = (win_games["team_score"] - win_games["opp_score"]).mean() if not win_games.empty else None
+    avg_loss_margin = (loss_games["opp_score"] - loss_games["team_score"]).mean() if not loss_games.empty else None
 
     summary = {
         "Wins": int((df["result"] == "W").sum()),
