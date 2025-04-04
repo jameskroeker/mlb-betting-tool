@@ -1,0 +1,6 @@
+date,team,opponent,home_away,result,team_win_pct,team_win_streak,team_loss_streak,team_wins,team_losses,team_record,season
+2024-03-01,NYY,BOS,home,W,0.6,3,0,12,8,12-8,2024
+2024-03-02,BOS,NYY,away,L,0.45,0,2,5,6,5-6,2024
+2024-03-03,LAD,CHC,home,W,0.7,4,0,14,6,14-6,2024
+2024-03-04,CHC,LAD,away,L,0.5,1,1,8,8,8-8,2024
+2024-03-05,HOU,TOR,home,W,0.8,5,0,16,4,16-4,2024
