@@ -51,6 +51,11 @@ with col2:
     if st.button("Reset"):
         st.session_state.search_clicked = False
 
+# Default guidance before any search
+if not st.session_state.search_clicked:
+    st.markdown("### 👋 Welcome!")
+    st.info("Use the filters in the sidebar to search for MLB games from 2021–2024. Click **Search** to view results.")
+
 # Run query only after clicking Search
 if st.session_state.search_clicked:
     filtered_df = filter_games(
