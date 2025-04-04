@@ -30,21 +30,24 @@ min_win_streak = st.sidebar.number_input("Min Win Streak", min_value=0, value=0)
 min_loss_streak = st.sidebar.number_input("Min Loss Streak", min_value=0, value=0)
 
 # Button logic
-search_clicked = False
 filtered_df = pd.DataFrame()
+
+# Use session state to track clicks
+if "search_clicked" not in st.session_state:
+    st.session_state.search_clicked = False
 
 col1, col2 = st.columns([1, 1])
 
 with col1:
     if st.button("Search"):
-        search_clicked = True
+        st.session_state.search_clicked = True
 
 with col2:
     if st.button("Reset"):
-        st.experimental_rerun()
+        st.session_state.search_clicked = False
 
 # Run query only after clicking Search
-if search_clicked:
+if st.session_state.search_clicked:
     filtered_df = filter_games(
         df,
         team=team,
@@ -72,7 +75,6 @@ if search_clicked:
             plot_streak_distribution(filtered_df, streak_type='team_win_streak')
             plot_streak_distribution(filtered_df, streak_type='team_loss_streak')
 
-        # Download Button
         st.download_button(
             label="Download CSV of Results",
             data=filtered_df.to_csv(index=False),
