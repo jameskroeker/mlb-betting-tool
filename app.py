@@ -82,6 +82,9 @@ if st.session_state.search_clicked:
         summary = calculate_summary(filtered_df)
         st.write(summary)
 
+        if min_win_streak > 0:
+            st.caption("ℹ️ Note: Avg Win Streak is less meaningful when a Min Win Streak filter is applied.")
+
         with st.expander("📈 Visualizations"):
             plot_win_pct_distribution(filtered_df)
             plot_streak_distribution(filtered_df, streak_type='team_win_streak')
