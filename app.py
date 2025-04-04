@@ -13,8 +13,13 @@ df['date'] = pd.to_datetime(df['date'])
 st.sidebar.header("Filters")
 team = st.sidebar.text_input("Team (abbreviation)")
 home_away = st.sidebar.selectbox("Home/Away", ["", "home", "away"])
-season_options = sorted(df['season'].dropna().unique())
-season = st.sidebar.selectbox("Season", [None] + list(season_options))
+season_options = ['All Seasons'] + sorted(df['season'].dropna().unique().tolist())
+season = st.sidebar.selectbox("Season", season_options)
+
+# Convert 'All Seasons' to None for filtering
+if season == 'All Seasons':
+    season = None
+
 min_win_pct = st.sidebar.slider("Min Win %", 0.0, 1.0, 0.5, 0.01)
 max_win_pct = st.sidebar.slider("Max Win %", 0.0, 1.0, 1.0, 0.01)
 min_win_streak = st.sidebar.slider("Min Win Streak", 0, 20, 0)
