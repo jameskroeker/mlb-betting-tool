@@ -11,49 +11,64 @@ df['date'] = pd.to_datetime(df['date'])
 
 # Sidebar filters
 st.sidebar.header("Filters")
+
 team = st.sidebar.text_input("Team (abbreviation)")
-home_away = st.sidebar.selectbox("Home/Away", ["", "home", "away"])
+
+home_away = st.sidebar.selectbox("Home/Away", ["All", "home", "away"])
+if home_away == "All":
+    home_away = None
+
 season_options = ['All Seasons'] + sorted(df['season'].dropna().unique().tolist())
 season = st.sidebar.selectbox("Season", season_options)
-
-# Convert 'All Seasons' to None for filtering
 if season == 'All Seasons':
     season = None
 
-min_win_pct = st.sidebar.slider("Min Win %", 0.0, 1.0, 0.5, 0.01)
+min_win_pct = st.sidebar.slider("Min Win %", 0.0, 1.0, 0.0, 0.01)
 max_win_pct = st.sidebar.slider("Max Win %", 0.0, 1.0, 1.0, 0.01)
-min_win_streak = st.sidebar.slider("Min Win Streak", 0, 20, 0)
-min_loss_streak = st.sidebar.slider("Min Loss Streak", 0, 20, 0)
 
-# Apply filters
-filtered_df = filter_games(
-    df,
-    team=team,
-    home_away=home_away,
-    min_win_pct=min_win_pct,
-    max_win_pct=max_win_pct,
-    min_win_streak=min_win_streak,
-    min_loss_streak=min_loss_streak,
-    season=season
-)
+min_win_streak = st.sidebar.number_input("Min Win Streak", min_value=0, value=0)
+min_loss_streak = st.sidebar.number_input("Min Loss Streak", min_value=0, value=0)
 
-# Results
-st.subheader("Filtered Games")
-st.write(f"🔎 {len(filtered_df)} result(s)")
-st.dataframe(filtered_df.head(50))
+# Search and Reset Buttons
+filtered_df = pd.DataFrame()
 
-# Summary stats
-st.subheader("Summary")
-summary = calculate_summary(filtered_df)
-st.write(summary)
+col1, col2 = st.columns([1, 1])
+with col1:
+    if st.button("Search"):
+        filtered_df = filter_games(
+            df,
+            team=team,
+            home_away=home_away,
+            min_win_pct=min_win_pct,
+            max_win_pct=max_win_pct,
+            min_win_streak=min_win_streak,
+            min_loss_streak=min_loss_streak,
+            season=season
+        )
 
-# Plots
-with st.expander("📊 Visualizations"):
-    plot_win_pct_distribution(filtered_df)
-    plot_streak_distribution(filtered_df, streak_type='team_win_streak')
-    plot_streak_distribution(filtered_df, streak_type='team_loss_streak')
+with col2:
+    if st.button("Reset"):
+        st.experimental_rerun()
 
-# Export
-if st.button("Download Results as CSV"):
-    export_filtered_df(filtered_df, "filtered_results.csv")
-    st.success("File saved as filtered_results.csv")
+# If search ran, show results
+if not filtered_df.empty:
+    st.subheader("Filtered Games")
+    st.write(f"🔎 {len(filtered_df)} result(s)")
+    st.dataframe(filtered_df.head(50))
+
+    st.subheader("Summary")
+    summary = calculate_summary(filtered_df)
+    st.write(summary)
+
+    with st.expander("📊 Visualizations"):
+        plot_win_pct_distribution(filtered_df)
+        plot_streak_distribution(filtered_df, streak_type='team_win_streak')
+        plot_streak_distribution(filtered_df, streak_type='team_loss_streak')
+
+    # CSV Export
+    st.download_button(
+        label="Download CSV of Results",
+        data=filtered_df.to_csv(index=False),
+        file_name="filtered_results.csv",
+        mime="text/csv"
+    )
