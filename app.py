@@ -35,16 +35,41 @@ filtered_df = pd.DataFrame()
 col1, col2 = st.columns([1, 1])
 with col1:
     if st.button("Search"):
-        filtered_df = filter_games(
-            df,
-            team=team,
-            home_away=home_away,
-            min_win_pct=min_win_pct,
-            max_win_pct=max_win_pct,
-            min_win_streak=min_win_streak,
-            min_loss_streak=min_loss_streak,
-            season=season
-        )
+filtered_df = filter_games(
+    df,
+    team=team,
+    home_away=home_away,
+    min_win_pct=min_win_pct,
+    max_win_pct=max_win_pct,
+    min_win_streak=min_win_streak,
+    min_loss_streak=min_loss_streak,
+    season=season
+)
+
+if filtered_df.empty:
+    st.warning("No results found. Try adjusting your filters.")
+else:
+    st.subheader("Filtered Games")
+    st.write(f"🔎 {len(filtered_df)} result(s)")
+    st.dataframe(filtered_df.head(50))
+
+    st.subheader("Summary")
+    summary = calculate_summary(filtered_df)
+    st.write(summary)
+
+    with st.expander("📊 Visualizations"):
+        plot_win_pct_distribution(filtered_df)
+        plot_streak_distribution(filtered_df, streak_type='team_win_streak')
+        plot_streak_distribution(filtered_df, streak_type='team_loss_streak')
+
+    # CSV Export
+    st.download_button(
+        label="Download CSV of Results",
+        data=filtered_df.to_csv(index=False),
+        file_name="filtered_results.csv",
+        mime="text/csv"
+    )
+
 
 with col2:
     if st.button("Reset"):
