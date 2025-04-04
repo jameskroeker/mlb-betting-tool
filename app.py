@@ -1,4 +1,3 @@
-from streamlit.runtime.scriptrunner import rerun
 import streamlit as st
 import pandas as pd
 from filters import filter_games, calculate_summary
@@ -42,7 +41,7 @@ with col1:
 
 with col2:
     if st.button("Reset"):
-        rerun()
+        st.experimental_rerun()
 
 # Run query only after clicking Search
 if search_clicked:
