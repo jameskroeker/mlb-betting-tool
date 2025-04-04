@@ -67,8 +67,10 @@ with col1:
             label="Download CSV of Results",
             data=filtered_df.to_csv(index=False),
             file_name="filtered_results.csv",
-            mime="text/csv"
+            mime="text/csv",
+            key="download_button"
         )
+
 
 
 
