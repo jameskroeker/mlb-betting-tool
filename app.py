@@ -83,7 +83,7 @@ if st.session_state.search_clicked:
         st.write(summary)
 
         if min_win_streak > 0:
-            st.caption("ℹ️ Note: Avg Win Streak is less meaningful when a Min Win Streak filter is applied.")
+            st.markdown(f"🔍 **Heads up:** Since you're filtering for teams with at least a {min_win_streak}-game win streak, the *average win streak* may not add much insight.")
 
         with st.expander("📈 Visualizations"):
             plot_win_pct_distribution(filtered_df)
