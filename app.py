@@ -9,26 +9,30 @@ data_file = "MLB_2024_Game_Data_FINAL_WORKSHEET.csv"
 df = pd.read_csv(data_file)
 df['date'] = pd.to_datetime(df['date'])
 
-# Rename columns for consistency
+# Rename for consistency
 df['team'] = df['team_x']
 
 # Sidebar filters
 st.sidebar.header("🔎 Search Filters")
-
 st.sidebar.subheader("📅 Game Filters")
+
 team = st.sidebar.text_input("Team (abbreviation)", help="Use team abbreviations like LAD, NYY, BOS")
 home_away = st.sidebar.selectbox("Home or Away", ["All", "home", "away"])
 if home_away == "All":
     home_away = None
 
+# Only 2024 is in this version
 st.sidebar.markdown("---")
-
-# Section 2: Performance Filters
 st.sidebar.subheader("📈 Performance Filters")
+
 min_win_pct = st.sidebar.slider("Min Win %", 0.0, 1.0, 0.0, 0.01)
 max_win_pct = st.sidebar.slider("Max Win %", 0.0, 1.0, 1.0, 0.01)
+
 min_win_streak = st.sidebar.number_input("Min Win Streak", min_value=0, value=0)
 min_loss_streak = st.sidebar.number_input("Min Loss Streak", min_value=0, value=0)
+
+# 🆕 Betting filter
+favorite_filter = st.sidebar.selectbox("Favorite Status", ["All", "Favorite", "Underdog"])
 
 # Button logic
 filtered_df = pd.DataFrame()
@@ -58,8 +62,14 @@ if st.session_state.search_clicked:
         max_win_pct=max_win_pct,
         min_win_streak=min_win_streak,
         min_loss_streak=min_loss_streak,
-        season=None  # Only 2024
+        season=None
     )
+
+    # Apply betting filter
+    if favorite_filter == "Favorite":
+        filtered_df = filtered_df[filtered_df["was_favorite"] == True]
+    elif favorite_filter == "Underdog":
+        filtered_df = filtered_df[filtered_df["was_favorite"] == False]
 
     if filtered_df.empty:
         st.warning("No results found. Try adjusting your filters.")
@@ -67,12 +77,20 @@ if st.session_state.search_clicked:
         st.markdown("---")
         st.subheader("🎯 Filtered Games")
         st.write(f"🔎 {len(filtered_df)} result(s)")
-        st.dataframe(filtered_df[['date', 'team', 'opponent', 'result', 'team_win_pct', 'team_win_streak', 'team_score', 'opp_score', 'hit_over', 'covered_runline', 'roi_$100_bet']].head(50))
+        st.dataframe(filtered_df[[
+            'date', 'team', 'opponent', 'home_away', 'result',
+            'team_win_pct', 'team_win_streak', 'team_loss_streak',
+            'team_score', 'opp_score', 'was_favorite', 'closing_moneyline',
+            'covered_runline', 'hit_over', 'roi_$100_bet'
+        ]].head(50))
 
         st.markdown("---")
         st.subheader("📊 Summary Stats")
         summary = calculate_summary(filtered_df)
         st.write(summary)
+
+        if min_win_streak > 0:
+            st.markdown(f"🔍 **Note:** Since you're filtering for teams with at least a {min_win_streak}-game win streak, the *average win streak* may be less useful.")
 
         with st.expander("📈 Visualizations"):
             plot_win_pct_distribution(filtered_df)
