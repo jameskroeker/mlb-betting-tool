@@ -7,12 +7,10 @@ from utils import export_filtered_df, plot_win_pct_distribution, plot_streak_dis
 st.title("⚾ MLB Team Game Finder (2024 Enriched with Betting Data)")
 data_file = "MLB_2024_Game_Data_FINAL_WORKSHEET.csv"
 df = pd.read_csv(data_file)
+
+# Fix and standardize column names
 df['date'] = pd.to_datetime(df['date_x'])
-df.rename(columns={'date_x': 'date'}, inplace=True)
-
-
-# Rename for consistency
-df['team'] = df['team_x']
+df.rename(columns={'date_x': 'date', 'team_x': 'team'}, inplace=True)
 
 # Sidebar filters
 st.sidebar.header("🔎 Search Filters")
@@ -23,7 +21,6 @@ home_away = st.sidebar.selectbox("Home or Away", ["All", "home", "away"])
 if home_away == "All":
     home_away = None
 
-# Only 2024 is in this version
 st.sidebar.markdown("---")
 st.sidebar.subheader("📈 Performance Filters")
 
@@ -33,10 +30,10 @@ max_win_pct = st.sidebar.slider("Max Win %", 0.0, 1.0, 1.0, 0.01)
 min_win_streak = st.sidebar.number_input("Min Win Streak", min_value=0, value=0)
 min_loss_streak = st.sidebar.number_input("Min Loss Streak", min_value=0, value=0)
 
-# 🆕 Betting filter
+# 🆕 Betting-related filter
 favorite_filter = st.sidebar.selectbox("Favorite Status", ["All", "Favorite", "Underdog"])
 
-# Button logic
+# Search + Reset button logic
 filtered_df = pd.DataFrame()
 if "search_clicked" not in st.session_state:
     st.session_state.search_clicked = False
@@ -49,12 +46,12 @@ with col2:
     if st.button("Reset"):
         st.session_state.search_clicked = False
 
-# Default guidance
+# Default message before searching
 if not st.session_state.search_clicked:
     st.markdown("### 👋 Welcome!")
     st.info("Use the filters in the sidebar to explore 2024 MLB game data enriched with betting insights. Click **Search** to begin.")
 
-# Run query
+# Run query and apply filters
 if st.session_state.search_clicked:
     filtered_df = filter_games(
         df,
@@ -67,7 +64,7 @@ if st.session_state.search_clicked:
         season=None
     )
 
-    # Apply betting filter
+    # Apply betting status filter
     if favorite_filter == "Favorite":
         filtered_df = filtered_df[filtered_df["was_favorite"] == True]
     elif favorite_filter == "Underdog":
@@ -79,12 +76,16 @@ if st.session_state.search_clicked:
         st.markdown("---")
         st.subheader("🎯 Filtered Games")
         st.write(f"🔎 {len(filtered_df)} result(s)")
-        st.dataframe(filtered_df[[
+
+        # Display only available columns
+        expected_columns = [
             'date', 'team', 'opponent', 'home_away', 'result',
             'team_win_pct', 'team_win_streak', 'team_loss_streak',
             'team_score', 'opp_score', 'was_favorite', 'closing_moneyline',
             'covered_runline', 'hit_over', 'roi_$100_bet'
-        ]].head(50))
+        ]
+        display_columns = [col for col in expected_columns if col in filtered_df.columns]
+        st.dataframe(filtered_df[display_columns].head(50))
 
         st.markdown("---")
         st.subheader("📊 Summary Stats")
