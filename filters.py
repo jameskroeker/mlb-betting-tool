@@ -1,50 +1,50 @@
 import pandas as pd
 
-def filter_games(
-    df,
-    team=None,
-    home_away=None,
-    min_win_pct=0.0,
-    max_win_pct=1.0,
-    min_win_streak=0,
-    min_loss_streak=0,
-    season=None
-):
-    result = df.copy()
+def filter_games(df, team=None, home_away=None, min_win_pct=0.0, max_win_pct=1.0, min_win_streak=0, min_loss_streak=0, season=None):
+    df_filtered = df.copy()
 
     if team:
-        result = result[result["team"].str.upper() == team.upper()]
+        df_filtered = df_filtered[df_filtered['team'] == team.upper()]
     if home_away:
-        result = result[result["home_away"] == home_away]
+        df_filtered = df_filtered[df_filtered['home_away'] == home_away]
     if season:
-        result = result[result["season"] == season]
-    if min_win_pct is not None:
-        result = result[result["team_win_pct"] >= min_win_pct]
-    if max_win_pct is not None:
-        result = result[result["team_win_pct"] <= max_win_pct]
-    if min_win_streak > 0:
-        result = result[result["team_win_streak"] >= min_win_streak]
-    if min_loss_streak > 0:
-        result = result[result["team_loss_streak"] >= min_loss_streak]
+        df_filtered = df_filtered[df_filtered['season'] == season]
 
-    return result
+    df_filtered = df_filtered[
+        (df_filtered['team_win_pct'] >= min_win_pct) &
+        (df_filtered['team_win_pct'] <= max_win_pct) &
+        (df_filtered['team_win_streak'] >= min_win_streak) &
+        (df_filtered['team_loss_streak'] >= min_loss_streak)
+    ]
+
+    return df_filtered
+
 
 def calculate_summary(df):
-    win_games = df[df["result"] == "W"]
-    loss_games = df[df["result"] == "L"]
+    if df.empty:
+        return {}
 
-    avg_win_margin = (win_games["team_score"] - win_games["opp_score"]).mean() if not win_games.empty else None
-    avg_loss_margin = (loss_games["opp_score"] - loss_games["team_score"]).mean() if not loss_games.empty else None
+    summary = {}
 
-    summary = {
-        "Wins": int((df["result"] == "W").sum()),
-        "Losses": int((df["result"] == "L").sum()),
-        "Avg Win %": round(df["team_win_pct"].mean(), 3) if not df.empty else None,
-        "Avg Win Streak": round(df["team_win_streak"].mean(), 2) if not df.empty else None,
-        "Avg Loss Streak": round(df["team_loss_streak"].mean(), 2) if not df.empty else None,
-        "Avg Margin of Victory": round(avg_win_margin, 2) if avg_win_margin is not None else None,
-        "Avg Margin of Defeat": round(avg_loss_margin, 2) if avg_loss_margin is not None else None,
-        "Max Win Streak": int(df["team_win_streak"].max()) if not df.empty else None,
-        "Max Loss Streak": int(df["team_loss_streak"].max()) if not df.empty else None
-    }
+    # Win/loss
+    summary['win_count'] = int((df['result'] == 'W').sum())
+    summary['loss_count'] = int((df['result'] == 'L').sum())
+
+    # Performance
+    summary['avg_win_pct'] = round(df['team_win_pct'].mean(), 3)
+    summary['avg_win_margin'] = round((df[df['result'] == 'W']['team_score'] - df[df['result'] == 'W']['opp_score']).mean(), 2)
+    summary['avg_loss_margin'] = round((df[df['result'] == 'L']['team_score'] - df[df['result'] == 'L']['opp_score']).mean(), 2)
+
+    # Betting outcomes
+    if 'hit_over' in df.columns:
+        summary['hit_over_rate'] = f"{(df['hit_over'].mean() * 100):.1f}%"
+    if 'covered_runline' in df.columns:
+        summary['covered_runline_rate'] = f"{(df['covered_runline'].mean() * 100):.1f}%"
+    if 'was_favorite' in df.columns:
+        fav_wins = df[(df['was_favorite'] == True) & (df['result'] == 'W')]
+        total_fav = df[df['was_favorite'] == True]
+        summary['favorite_win_rate'] = f"{(len(fav_wins) / len(total_fav) * 100):.1f}%" if len(total_fav) > 0 else "N/A"
+    if 'roi_$100_bet' in df.columns:
+        summary['avg_roi_on_$100'] = f"${df['roi_$100_bet'].mean():.2f}"
+
     return summary
