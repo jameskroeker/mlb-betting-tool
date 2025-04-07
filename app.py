@@ -72,45 +72,43 @@ if st.session_state.search_clicked:
 
     if filtered_df.empty:
         st.warning("No results found. Try adjusting your filters.")
-    else:
-                st.markdown("---")
-        st.subheader("🎯 Filtered Games")
-        st.write(f"🔎 {len(filtered_df)} result(s)")
+   else:
+    st.markdown("---")
+    st.subheader("🎯 Filtered Games")
+    st.write(f"🔎 {len(filtered_df)} result(s)")
 
-        # Display only available columns
-        expected_columns = [
-            'date', 'team', 'opponent', 'home_away', 'result',
-            'team_win_pct', 'team_win_streak', 'team_loss_streak',
-            'team_score', 'opp_score', 'was_favorite', 'closing_moneyline',
-            'covered_runline', 'hit_over', 'roi_$100_bet'
-        ]
-        display_columns = [col for col in expected_columns if col in filtered_df.columns]
+    # Display only available columns
+    expected_columns = [
+        'date', 'team', 'opponent', 'home_away', 'result',
+        'team_win_pct', 'team_win_streak', 'team_loss_streak',
+        'team_score', 'opp_score', 'was_favorite', 'closing_moneyline',
+        'covered_runline', 'hit_over', 'roi_$100_bet'
+    ]
+    display_columns = [col for col in expected_columns if col in filtered_df.columns]
 
-        # Safely cast to string to avoid crashing Streamlit
-        safe_display = filtered_df[display_columns].copy()
-        safe_display = safe_display.astype(str)
+    # Safely cast to string to avoid crashing Streamlit
+    safe_display = filtered_df[display_columns].copy()
+    safe_display = safe_display.astype(str)
 
-        st.dataframe(safe_display.head(50))
+    st.dataframe(safe_display.head(50))
 
+    st.markdown("---")
+    st.subheader("📊 Summary Stats")
+    summary = calculate_summary(filtered_df)
+    st.write(summary)
 
+    if min_win_streak > 0:
+        st.markdown(f"🔍 **Note:** Since you're filtering for teams with at least a {min_win_streak}-game win streak, the *average win streak* may be less useful.")
 
-        st.markdown("---")
-        st.subheader("📊 Summary Stats")
-        summary = calculate_summary(filtered_df)
-        st.write(summary)
+    with st.expander("📈 Visualizations"):
+        plot_win_pct_distribution(filtered_df)
+        plot_streak_distribution(filtered_df, streak_type='team_win_streak')
+        plot_streak_distribution(filtered_df, streak_type='team_loss_streak')
 
-        if min_win_streak > 0:
-            st.markdown(f"🔍 **Note:** Since you're filtering for teams with at least a {min_win_streak}-game win streak, the *average win streak* may be less useful.")
-
-        with st.expander("📈 Visualizations"):
-            plot_win_pct_distribution(filtered_df)
-            plot_streak_distribution(filtered_df, streak_type='team_win_streak')
-            plot_streak_distribution(filtered_df, streak_type='team_loss_streak')
-
-        st.download_button(
-            label="Download CSV of Results",
-            data=filtered_df.to_csv(index=False),
-            file_name="filtered_results.csv",
-            mime="text/csv",
-            key="download_button"
-        )
+    st.download_button(
+        label="Download CSV of Results",
+        data=filtered_df.to_csv(index=False),
+        file_name="filtered_results.csv",
+        mime="text/csv",
+        key="download_button"
+    )
