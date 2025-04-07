@@ -85,7 +85,10 @@ if st.session_state.search_clicked:
             'covered_runline', 'hit_over', 'roi_$100_bet'
         ]
         display_columns = [col for col in expected_columns if col in filtered_df.columns]
-        st.dataframe(filtered_df[display_columns].head(50))
+        safe_display = filtered_df[display_columns].copy()
+safe_display = safe_display.astype(str)  # Convert all columns to string
+st.dataframe(safe_display.head(50))
+
 
         st.markdown("---")
         st.subheader("📊 Summary Stats")
