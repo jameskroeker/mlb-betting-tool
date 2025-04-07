@@ -73,7 +73,7 @@ if st.session_state.search_clicked:
     if filtered_df.empty:
         st.warning("No results found. Try adjusting your filters.")
     else:
-        st.markdown("---")
+                st.markdown("---")
         st.subheader("🎯 Filtered Games")
         st.write(f"🔎 {len(filtered_df)} result(s)")
 
@@ -85,9 +85,13 @@ if st.session_state.search_clicked:
             'covered_runline', 'hit_over', 'roi_$100_bet'
         ]
         display_columns = [col for col in expected_columns if col in filtered_df.columns]
+
+        # Safely cast to string to avoid crashing Streamlit
         safe_display = filtered_df[display_columns].copy()
-safe_display = safe_display.astype(str)  # Convert all columns to string
-st.dataframe(safe_display.head(50))
+        safe_display = safe_display.astype(str)
+
+        st.dataframe(safe_display.head(50))
+
 
 
         st.markdown("---")
