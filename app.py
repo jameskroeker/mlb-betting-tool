@@ -7,7 +7,9 @@ from utils import export_filtered_df, plot_win_pct_distribution, plot_streak_dis
 st.title("⚾ MLB Team Game Finder (2024 Enriched with Betting Data)")
 data_file = "MLB_2024_Game_Data_FINAL_WORKSHEET.csv"
 df = pd.read_csv(data_file)
-df['date'] = pd.to_datetime(df['date'])
+df['date'] = pd.to_datetime(df['date_x'])
+df.rename(columns={'date_x': 'date'}, inplace=True)
+
 
 # Rename for consistency
 df['team'] = df['team_x']
